@@ -1,3 +1,11 @@
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener("push", (event) => {
   let data = {
     title: "Cảnh báo uống thuốc!",
@@ -6,22 +14,33 @@ self.addEventListener("push", (event) => {
   };
 
   if (event.data) {
+    const rawText = event.data.text();
+    console.log("[SW] Push payload nhận được:", rawText);
     try {
-      data = { ...data, ...event.data.json() };
+      data = { ...data, ...JSON.parse(rawText) };
     } catch {
-      data.body = event.data.text();
+      data.body = rawText;
     }
+  } else {
+    console.log("[SW] Push nhận được nhưng event.data rỗng");
   }
 
   event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: "./icon-192.png",
-      badge: "./icon-192.png",
-      tag: "pillbox-alert-5x",
-      renotify: true,
-      data: { url: data.url || "./" }
-    })
+    self.registration
+      .showNotification(data.title, {
+        body: data.body,
+        icon: "./icon-192.png",
+        badge: "./icon-192.png",
+        tag: "pillbox-alert-5x",
+        renotify: true,
+        data: { url: data.url || "./" }
+      })
+      .then(() => {
+        console.log("[SW] showNotification thành công");
+      })
+      .catch((err) => {
+        console.error("[SW] showNotification lỗi:", err);
+      })
   );
 });
 
