@@ -4,6 +4,7 @@ const WORKER_URL = "https://pillbox-push-worker.x404x.workers.dev";
 const statusEl = document.getElementById("status");
 const btnSub = document.getElementById("btn-sub");
 const btnTest = document.getElementById("btn-test");
+const btnLocal = document.getElementById("btn-local");
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -34,8 +35,7 @@ async function subscribeUser() {
     });
   }
 
-  // Gửi subscription lên Worker để lưu tạm trong bộ nhớ test
-  await fetch(`${WORKER_URL}/api/subscribe`, {
+  const res = await fetch(`${WORKER_URL}/api/subscribe`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -44,10 +44,14 @@ async function subscribeUser() {
     })
   });
 
+  if (!res.ok) {
+    statusEl.textContent = "Lỗi lưu subscription lên Worker: HTTP " + res.status;
+    return;
+  }
+
   statusEl.textContent = "Đã bật thông báo thành công!\n\n" + JSON.stringify(sub, null, 2);
 }
 
-// Giả lập hộp thuốc báo 5 lần chưa bấm apply -> gửi request tới Worker
 async function simulatePillboxMissed5Times() {
   const payload = {
     deviceId: "pillbox-01",
@@ -66,6 +70,28 @@ async function simulatePillboxMissed5Times() {
   statusEl.textContent = "Kết quả gửi từ Worker:\n" + JSON.stringify(data, null, 2);
 }
 
+async function testLocalNotification() {
+  try {
+    if (Notification.permission !== "granted") {
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") {
+        statusEl.textContent = "Chưa có quyền thông báo: " + perm;
+        return;
+      }
+    }
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification("Test Local SW", {
+      body: "Service Worker hiển thị thông báo thành công!",
+      icon: "./icon-192.png",
+      tag: "pillbox-local-test",
+      renotify: true
+    });
+    statusEl.textContent = "Đã gọi showNotification() local thành công!";
+  } catch (err) {
+    statusEl.textContent = "Lỗi showNotification() local: " + err.message;
+  }
+}
+
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./sw.js").catch((err) => {
     statusEl.textContent = "Lỗi đăng ký SW: " + err.message;
@@ -74,3 +100,4 @@ if ("serviceWorker" in navigator) {
 
 btnSub.addEventListener("click", subscribeUser);
 btnTest.addEventListener("click", simulatePillboxMissed5Times);
+btnLocal.addEventListener("click", testLocalNotification);
