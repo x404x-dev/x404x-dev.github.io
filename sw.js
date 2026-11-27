@@ -7,51 +7,35 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data = {
-    title: "Cảnh báo uống thuốc!",
-    body: "Hộp thuốc đã nhắc 5 lần nhưng chưa xác nhận.",
-    url: "./"
-  };
-
-  try {
-    if (event.data) {
-      const rawText = event.data.text();
-      try {
-        const parsed = JSON.parse(rawText);
-        data = { ...data, ...parsed };
-      } catch {
-        if (rawText) data.body = rawText;
-      }
-    }
-  } catch (err) {
-    data.body = "Nhận push nhưng đọc dữ liệu lỗi: " + (err?.message || String(err));
-  }
-
   event.waitUntil(
-    self.registration.showNotification(data.title || "Cảnh báo uống thuốc!", {
-      body: data.body || "Hộp thuốc đã nhắc 5 lần nhưng chưa xác nhận.",
-      tag: "pillbox-alert-5x",
-      renotify: true,
-      data: { url: data.url || "./" }
-    })
-  );
-});
+    (async () => {
+      await self.registration.showNotification("DEBUG: Đã vào sự kiện push", {
+        body: "SW nhận được tín hiệu push từ FCM.",
+        tag: "pillbox-push-debug",
+        renotify: true
+      });
 
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  const targetUrl = event.notification.data?.url || "./";
+      let data = {
+        title: "Cảnh báo uống thuốc!",
+        body: "Hộp thuốc đã nhắc 5 lần nhưng chưa xác nhận.",
+        url: "./"
+      };
 
-  event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ("focus" in client) {
-          client.navigate(targetUrl);
-          return client.focus();
+      if (event.data) {
+        const rawText = event.data.text();
+        try {
+          data = { ...data, ...JSON.parse(rawText) };
+        } catch {
+          if (rawText) data.body = rawText;
         }
       }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
-    })
+
+      await self.registration.showNotification(data.title, {
+        body: data.body,
+        tag: "pillbox-alert-5x",
+        renotify: true,
+        data: { url: data.url || "./" }
+      });
+    })()
   );
 });
