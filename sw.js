@@ -13,34 +13,27 @@ self.addEventListener("push", (event) => {
     url: "./"
   };
 
-  if (event.data) {
-    const rawText = event.data.text();
-    console.log("[SW] Push payload nhận được:", rawText);
-    try {
-      data = { ...data, ...JSON.parse(rawText) };
-    } catch {
-      data.body = rawText;
+  try {
+    if (event.data) {
+      const rawText = event.data.text();
+      try {
+        const parsed = JSON.parse(rawText);
+        data = { ...data, ...parsed };
+      } catch {
+        if (rawText) data.body = rawText;
+      }
     }
-  } else {
-    console.log("[SW] Push nhận được nhưng event.data rỗng");
+  } catch (err) {
+    data.body = "Nhận push nhưng đọc dữ liệu lỗi: " + (err?.message || String(err));
   }
 
   event.waitUntil(
-    self.registration
-      .showNotification(data.title, {
-        body: data.body,
-        icon: "./icon-192.png",
-        badge: "./icon-192.png",
-        tag: "pillbox-alert-5x",
-        renotify: true,
-        data: { url: data.url || "./" }
-      })
-      .then(() => {
-        console.log("[SW] showNotification thành công");
-      })
-      .catch((err) => {
-        console.error("[SW] showNotification lỗi:", err);
-      })
+    self.registration.showNotification(data.title || "Cảnh báo uống thuốc!", {
+      body: data.body || "Hộp thuốc đã nhắc 5 lần nhưng chưa xác nhận.",
+      tag: "pillbox-alert-5x",
+      renotify: true,
+      data: { url: data.url || "./" }
+    })
   );
 });
 
