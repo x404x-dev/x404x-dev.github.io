@@ -32,21 +32,23 @@
       border-radius: 8px;
       overflow-x: auto;
       font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
   </style>
 </head>
 <body>
   <h2>Hộp Thuốc Thông Minh - Test Push</h2>
-  <p>1. Trên iPhone, hãy mở bằng Safari -> <b>Share</b> -> <b>Add to Home Screen</b> rồi mở từ màn hình chính.</p>
-  <p>2. Bấm nút dưới để bật thông báo và đăng ký thiết bị.</p>
+  <p>1. Bấm <b>Bật thông báo</b> để cấp quyền và đăng ký thiết bị.</p>
+  <p>2. Bấm <b>Test thông báo local</b> để kiểm tra hiển thị trực tiếp.</p>
 
   <button id="btn-sub">Bật thông báo</button>
   <button id="btn-test">Giả lập hộp thuốc báo 5 lần</button>
   <button id="btn-local">Test thông báo local</button>
 
   <h3>Trạng thái & Subscription JSON:</h3>
-  <pre id="status">Chưa đăng ký</pre>
+  <pre id="status">Đang khởi tạo...</pre>
 
-  <script src="./app.js"></script>
+  <script src="./app.js?v=2"></script>
 </body>
 </html>
