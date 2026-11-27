@@ -1,5 +1,5 @@
 const VAPID_PUBLIC_KEY = "BANLcD1Pz5jwms6v8SzhglCgjAlOqiHwUzGecK_g-g0u6A3DBrWQy0dFDK9W5LmBXllJSPjlBq8gpNpfLWPyFqs";
-const WORKER_URL = "https://app.karasu.io.vn";
+const WORKER_URL = "https://pillbox-push-worker.x404x.workers.dev";
 
 const statusEl = document.getElementById("status");
 const btnSub = document.getElementById("btn-sub");
